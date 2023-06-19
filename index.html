@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
+    <title>Juego del 21 🤗</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="shortcut icon" href="./img/poker.png">
+</head>
+
+<body>
+    <header> 
+        <div class="info">
+            <div class="info-jugador1">
+                <div class="logo">
+                    <img src="./img/Logos-partidas1.png" alt="Logo Usuario" class="foto-usuario" id="foto_usuario">
+                </div>
+                <div class="nombre-jugador1">
+                    <span id="jugador1">Usuario</span>
+                </div>
+            </div>
+
+            <div class="marcador">
+                <img src="./img/Logos-partidas1.png" alt="Logo" class="logo-partida">
+                <span class="texto">Partidas ganadas</span>
+                <div class="puntos-jugador"><span id="jugador1">0</span></div>
+                <div class="puntos-jugador"><span id="jugador2">0</span></div>
+                <span class="texto">Partidas ganadas</span>
+                <img src="./img/foto-usuario.jpeg" alt="Logo" class="logo-partida">
+            </div>
+
+            <div class="info-jugador2">
+                <div class="nombre-jugador2">
+                    <span id="jugador2">Usuario2</span>
+                </div>
+                <div class="logo">
+                    <img src="./img/foto-usuario.jpeg" alt="Logo Usuario" class="foto-usuario" id="foto_usuario">
+                </div>
+              
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="table">
+            <div class= "mazo-jugador" id="mazo">mazo</div>
+
+            <div class="jugador">
+                <div  class= "cartas" id="cartas-jugador">carta</div>
+            </div>
+            <div class="contador-jugador">
+                <div class="marco">
+                    <div class="puntaje">
+                        <img src="./img/icono-poker.png" alt="Logo Puntaje" class="logo">
+                        <span id="puntaje">0</span>
+                    </div> 
+                </div>
+            </div>
+
+            <div class="dealer">dealer</div>
+
+            <div class="mazo-maquina">mazo</div>
+            <div class="maquina">
+                <div class="cartas" id="cartas-maquina">cartas</div>
+            </div>
+            <div class="contador-maquina">
+                <div class="marco">
+                    <div class="puntaje">
+                        <img src="./img/icono-poker.png" alt="Logo Puntaje" class="logo">
+                        <span>0</span>
+                    </div>
+                </div>
+                
+            </div>
+           
+        </div>
+    </main>
+
+    <footer>
+        <div class="control-jugador">
+            <h2>Control Jugador:</h2>
+            <button class="boton" id="solicitar-carta">Solicitar Carta
+                <span></span>
+                <span></span>
+            </button>
+            <button class= "boton" id="plantarse">Plantarse
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+
+        <div class="botones-juego">
+            <h2>Control Juego:</h2>
+            <button class="boton" id="reiniciar">Reiniciar
+                <span></span>
+                <span></span>
+            </button>
+            <button class="boton" id="finalizar">Finalizar Juego
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </footer>
+    <script src="./js/main.js"></script>
+</body>
+</html>
