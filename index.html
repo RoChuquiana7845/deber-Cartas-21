@@ -23,8 +23,8 @@
             <div class="marcador">
                 <img src="./img/Logos-partidas1.png" alt="Logo" class="logo-partida">
                 <span class="texto">Partidas ganadas</span>
-                <div class="puntos-jugador"><span id="jugador1">0</span></div>
-                <div class="puntos-jugador"><span id="jugador2">0</span></div>
+                <div class="puntos-jugador"><span id="jugadorpuntos">0</span></div>
+                <div class="puntos-jugador"><span id="jugador2puntos">0</span></div>
                 <span class="texto">Partidas ganadas</span>
                 <img src="./img/foto-usuario.jpeg" alt="Logo" class="logo-partida">
             </div>
@@ -43,31 +43,39 @@
 
     <main>
         <div class="table">
-            <div class= "mazo-jugador" id="mazo">mazo</div>
+            <div class= "mazo-jugador" id="mazo">
+                <img src="./img/carta boca abajo.png" alt="Mazo" id="mazo-cartas"><br>
+                <span id="text-mazo">Baraja: </span>
+            </div>
 
             <div class="jugador">
-                <div  class= "cartas" id="cartas-jugador">carta</div>
+                <div  class= "cartas" id="cartas-jugador"></div>
             </div>
             <div class="contador-jugador">
                 <div class="marco">
                     <div class="puntaje">
                         <img src="./img/icono-poker.png" alt="Logo Puntaje" class="logo">
-                        <span id="puntaje">0</span>
+                        <span id="puntajejugador">0</span>
                     </div> 
                 </div>
             </div>
 
-            <div class="dealer">dealer</div>
-
-            <div class="mazo-maquina">mazo</div>
+            <div class="dealer">
+                <div class="tipo-mazo">
+                </div>
+            </div>
+            <div class="mazo-maquina">
+                <img src="./img/carta boca abajo.png" alt="Mazo" id="mazo-cartas"><br>
+                <span id="text-mazo">Baraja: </span>
+            </div>
             <div class="maquina">
-                <div class="cartas" id="cartas-maquina">cartas</div>
+                <div class="cartas" id="cartas-maquina"></div>
             </div>
             <div class="contador-maquina">
                 <div class="marco">
                     <div class="puntaje">
                         <img src="./img/icono-poker.png" alt="Logo Puntaje" class="logo">
-                        <span>0</span>
+                        <span id="puntajemaquina">0</span>
                     </div>
                 </div>
                 
@@ -83,6 +91,7 @@
                 <span></span>
                 <span></span>
             </button>
+            
             <button class= "boton" id="plantarse">Plantarse
                 <span></span>
                 <span></span>
