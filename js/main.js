@@ -1,81 +1,25 @@
-class Card { 
-    constructor(value,type, cardImage) {
-        this.value = value;
-        this.type = type; 
-        this.cardImage  = cardImage
-    }
-
-    
-}
-
-class DeckOfCard { 
-    constructor(type) { 
-        this.apiUrl = 'https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1'; 
-        this.type = type;
-        this.deck = "";
-    }
-
-    showDeck () { 
-        this.type.forEach((text)=>{
-            text.innerHTML += this.deck;
-        })
-    }
-
-    async getCard() { 
-        try { 
-            const response = await fetch('https://deckofcardsapi.com/api/deck/' + this.deck + '/draw/?count=1');
-            const result = await response.json();
-            return [result.cards.value, result.cards.suit, result.cards.image];
-        } catch (error) { 
-            console.log("Error :"+ error); 
-        }
-    }
-
-    async starCard() { 
-        try { 
-            const response = await fetch(this.apiUrl);
-            const result = await response.json();
-            this.deck = await result.deck_id; 
-            this.showDeck();
-        }
-        catch (error) { 
-            console.log("Error: "+ error);
-        }
-    }
-
-    
-}
-
-
-class Player {
-    constructor(name, score, divCards, sumOfCards, deckOfCard) { 
+class Player { 
+    constructor(name, score, divCards, sumOfCards, namedeck) { 
         this.name = name;
         this.score = score; 
         this.divCards = divCards;
         this.sumOfCards = sumOfCards;
-        this.deckOfCard = deckOfCard;
+        this.namedeck = namedeck;
+        this.apiUrl = 'https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1'; 
         this.points = 0;
         this.gamesWon = 0;
-        this.cardused = 0
-        this.mycards = []
+        this.deck = "";
+
     }
 
     getName() { 
         this.name.innerHTML = prompt("Ingrese el nombre del jugador 1");
     }
 
-    async playUser() {
-        let cardInfo = this.deckOfCard.getCard()
-        let card = await new Card(cardInfo[0], cardInfo[1], cardInfo[2])
-        await this.mycards.push(card);
-        await console.log(this.mycards);
-        const div = await document.createElement('div'); 
-        await div.setAttribute('id', 'cartas-jugador'); 
-        await div.setAttribute('class', 'carta');
-        div.innerHTML += await `<img class="carta-img flip-in-ver-right" src="${this.mycards[this.cardused].cardImage}" alt="Carta: ${this.mycards[this.cardused].value} ${this.mycards[this.cardused].type}">`;
-        this.divCards.appendChild(div);
-        this.showSumofCards(this.mycards[this.cardused].value);
-        this.cardused++;
+    showDeck () { 
+        this.namedeck.forEach((text)=>{
+            text.innerHTML += this.deck;
+        })
     }
 
     showSumofCards(value) {
@@ -94,11 +38,40 @@ class Player {
         alert(mensaje);
         this.score.innerHTML = this.gamesWon;
     }
+
+    async playUser() { 
+        try { 
+            const response = await fetch('https://deckofcardsapi.com/api/deck/' + this.deck + '/draw/?count=1');
+            const result = await response.json();
+            let div = document.createElement('div'); 
+            div.setAttribute('id', 'cartas-jugador'); 
+            div.setAttribute('class', 'carta');
+            div.innerHTML += `<img class="carta-img flip-in-ver-right" src="${result.cards[0].image}" alt="Carta: ${result.cards[0].value} ${result.cards[0].suit}">`;
+            this.divCards.appendChild(div);
+            this.showSumofCards(result.cards[0].value);
+        } catch(error) { 
+            console.log("Error: "+ error);
+        }
+    }
+
+
+    async stardeckOfCard() { 
+        try { 
+            const response = await fetch(this.apiUrl);
+            const result = await response.json();
+            this.deck = await result.deck_id; 
+            this.showDeck();
+        }
+        catch (error) { 
+            console.log("Error: "+ error);
+        }
+    }
+
 }
 
 class UserPlayer extends Player { 
-    constructor(name, score, divCards, sumOfCards, deckOfCard, request) { 
-        super(name, score, divCards, sumOfCards, deckOfCard);
+    constructor(name, score, divCards, sumOfCards, namedeck, request) { 
+        super(name, score, divCards, sumOfCards, namedeck);
         this.request = request;
     }
 
@@ -110,24 +83,22 @@ class UserPlayer extends Player {
 }
 
 class MachinePlayer extends Player { 
-    play() {
+    play(URLdeck) {
         let probabilidad = Math.floor(Math.random()*4);
         switch(probabilidad) { 
             case 1: 
-                this.mechanismPlayer( 11);break;
+                this.mechanismPlayer( 11, URLdeck);break;
             case 2: 
-                this.mechanismPlayer(14);break;
+                this.mechanismPlayer(17, URLdeck);break;
             case 3: 
-                this.mechanismPlayer(17);break;
-                
-
+                this.mechanismPlayer(20, URLdeck);break;
         }
         
     }
 
-    mechanismPlayer(level) { 
+    mechanismPlayer(level, URLdeck) { 
         if(this.points <= level) { 
-            this.playUser();
+            this.playUser(URLdeck);
         } else { 
             alert("Paso🥸");
         }
@@ -135,23 +106,37 @@ class MachinePlayer extends Player {
 }
 
 class Game { 
-    constructor(deckOfCard, player1, player2, gameProcess) { 
-        this.deckOfCard = deckOfCard;
-        this.player1= player1;
-        this.player2 = player2; 
+    constructor(player1, player2, gameProcess) { 
+        this.player1 = player1;
+        this.player2 = player2;
         this.gameProcess = gameProcess;
+    }
 
+    async starGame() { 
+        await this.player1.getName();
+        await this.player2.getName();
+        await this.player1.stardeckOfCard();
+        await this.player1.getReady();
+        this.player2.deck = this.player1.deck;
+        this.process();
+        this.startCardsOfPlayers();
+    }
+
+    startCardsOfPlayers() { 
+        for (let i = 0; i<2; i++) { 
+            this.player1.playUser(this.player1.deck);
+            this.player2.mechanismPlayer(11);
+        };
     }
 
     process() { 
         this.gameProcess.addEventListener("click" ,()=> {
-            this.cardused += 1
-            this.player2.play();
-            this.checkRoundWinner();
+            setTimeout(this.checkRoundWinner(), 3000)
         })   
     }
 
     checkRoundWinner() { 
+        console.log(this.player1.points);
         if (this.player1.points >= 21 || this.player2.points >=21) {
             if (this.player1.points == 21 || this.player1.points <= this.player2.points) { 
                 this.player1.pointForRoundVictory(`Ganaste 🤗: PuntajeUsuario: ${this.player1.points}, PuntajeMaquina: ${this.player2.points}`);
@@ -160,37 +145,10 @@ class Game {
             }
         }
     }
-
-    restart() {
-        console.log("Hola");
-    }
-
-    async starGame() { 
-        try { 
-            this.deckOfCard.starCard();
-            await this.player1.getName();
-            await this.player2.getName();
-            this.baraja = await this.deckOfCard.deck;
-            await this.player1.getReady();
-            this.startCardsOfPlayers();
-            this.process();
-        }
-        catch (error) { 
-            console.log("Error: "+ error);
-        }
-    }
-
-    startCardsOfPlayers() { 
-        for (let i = 0; i<2; i++) { 
-            this.player1.playUser();
-            this.player2.mechanismPlayer(11);
-        };
-    }
-
+     
 }
 
-const deckOfCard = new DeckOfCard(document.querySelectorAll("#text-mazo"));
-const playeruser = new UserPlayer(document.querySelector("#jugador1"), document.querySelector("#jugador1puntos"), document.querySelector("#cartas-jugador"), document.querySelector("#puntajejugador"), deckOfCard, document.querySelector("#solicitar-carta"));
-const playermachine = new MachinePlayer(document.querySelector("#jugador2"), document.querySelector("#jugador2puntos"), document.querySelector("#cartas-maquina"), document.querySelector("#puntajemaquina") ,deckOfCard);
-const game1 = new Game(deckOfCard, playeruser, playermachine, document.querySelector(".control-jugador")); 
+const playeruser = new UserPlayer(document.querySelector("#jugador1"), document.querySelector("#jugador1puntos"), document.querySelector("#cartas-jugador"), document.querySelector("#puntajejugador"), document.querySelectorAll("#text-mazo"), document.querySelector("#solicitar-carta"));
+const playermachine = new MachinePlayer(document.querySelector("#jugador2"), document.querySelector("#jugador2puntos"), document.querySelector("#cartas-maquina"), document.querySelector("#puntajemaquina") , document.querySelectorAll("#text-mazo"));
+const game1 = new Game(playeruser, playermachine, document.querySelector(".control-jugador")); 
 game1.starGame();
