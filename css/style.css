@@ -121,7 +121,10 @@ h2 {
 .carta-img { 
     width: 4em;
     height: 5.4em;
-    
+}
+
+#text-mazo { 
+    color: #fff;
 }
 
 .jugador,
