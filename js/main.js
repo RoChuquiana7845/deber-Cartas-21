@@ -13,6 +13,7 @@ class Player {
     }
 
     getName() { 
+        Saludar()
         this.name.innerHTML = prompt("Ingrese el nombre del jugador 1");
     }
 
@@ -30,7 +31,14 @@ class Player {
         } else { 
             this.points += Number(value);
         }
+        this.checkRoundLooser();
         this.sumOfCards.textContent = this.points;
+    }
+
+    checkRoundLooser() { 
+        if (this.points>= 21) { 
+            alert('Perdiste');
+        }
     }
 
     pointForRoundVictory(mensaje) { 
@@ -68,37 +76,23 @@ class Player {
     }
 
 }
-
-class UserPlayer extends Player { 
-    constructor(name, score, divCards, sumOfCards, namedeck, request) { 
-        super(name, score, divCards, sumOfCards, namedeck);
-        this.request = request;
-    }
-
-    getReady() { 
-        this.request.addEventListener("click", ()=> { 
-            this.playUser();
-        })
-    } 
-}
-
 class MachinePlayer extends Player { 
-    play(URLdeck) {
+    play() {
         let probabilidad = Math.floor(Math.random()*4);
         switch(probabilidad) { 
             case 1: 
-                this.mechanismPlayer( 11, URLdeck);break;
+                this.mechanismPlayer( 11);break;
             case 2: 
-                this.mechanismPlayer(17, URLdeck);break;
+                this.mechanismPlayer(17);break;
             case 3: 
-                this.mechanismPlayer(20, URLdeck);break;
+                this.mechanismPlayer(20);break;
         }
         
     }
 
-    mechanismPlayer(level, URLdeck) { 
+    mechanismPlayer(level) { 
         if(this.points <= level) { 
-            this.playUser(URLdeck);
+            this.playUser();
         } else { 
             alert("Paso🥸");
         }
@@ -106,49 +100,88 @@ class MachinePlayer extends Player {
 }
 
 class Game { 
-    constructor(player1, player2, gameProcess) { 
+    constructor(player1, player2, request, pass, exitbutton, restartbutton) { 
         this.player1 = player1;
         this.player2 = player2;
-        this.gameProcess = gameProcess;
+        this.request = request;
+        this.pass = pass;
+        this.exitbutton = exitbutton;
+        this.restartbutton = restartbutton;
     }
 
     async starGame() { 
         await this.player1.getName();
-        await this.player2.getName();
         await this.player1.stardeckOfCard();
-        await this.player1.getReady();
         this.player2.deck = this.player1.deck;
-        this.process();
         this.startCardsOfPlayers();
+        this.getReady();
+        this.passTurn();
+        this.exit();
+        this.restart();
+    }
+
+    getReady() { 
+        this.request.addEventListener("click", ()=> { 
+            this.player1.playUser();
+            this.player2.play();
+            setInterval(this.checkRoundWinner(), 5000)
+            
+        })
+    } 
+
+    passTurn() { 
+        this.pass.addEventListener('click', ()=> { 
+            this.player2.play();
+            this.checkRoundWinner();
+        })
     }
 
     startCardsOfPlayers() { 
         for (let i = 0; i<2; i++) { 
-            this.player1.playUser(this.player1.deck);
+            this.player1.playUser();
             this.player2.mechanismPlayer(11);
         };
     }
 
-    process() { 
-        this.gameProcess.addEventListener("click" ,()=> {
-            setTimeout(this.checkRoundWinner(), 3000)
-        })   
-    }
+   
 
     checkRoundWinner() { 
         console.log(this.player1.points);
-        if (this.player1.points >= 21 || this.player2.points >=21) {
+        if (this.player1.points > 21 && this.player2.points >21) { 
+            alert("Empate");
+        } else if (this.player1.points >= 21 || this.player2.points >=21) {
             if (this.player1.points == 21 || this.player1.points <= this.player2.points) { 
                 this.player1.pointForRoundVictory(`Ganaste 🤗: PuntajeUsuario: ${this.player1.points}, PuntajeMaquina: ${this.player2.points}`);
             } else if(this.player2.points == 21 || this.player2.points <= this.player1.points) { 
                 this.player2.pointForRoundVictory(`Ganó la IA 🤖: PuntajeUsuario: ${this.player1.points}, PuntajeMaquina: ${this.player2.points}`)
+            } else { 
+                alert('Empate');
             }
         }
+    }
+
+    restart() { 
+        this.restartbutton.addEventListener('click', ()=> { 
+            this.player1.points = 0;
+            this.player2.points = 0;
+            this.player1.sumOfCards.textContent = 0;
+            this.player2.sumOfCards.textContent = 0;
+            document.querySelectorAll("#cartas-jugador").forEach((card)=>{
+                card.remove();
+            })
+        })
+    }
+
+    exit() {
+        this.exitbutton.addEventListener("click", ()=> {
+            alert(`Gracias por jugar. Estadisticas: Jugador ${this.player1.name.textContent}: ${this.player1.gamesWon} vs AI Opponent🤖: ${this.player2.gamesWon}`)
+            location.reload();
+        })
     }
      
 }
 
-const playeruser = new UserPlayer(document.querySelector("#jugador1"), document.querySelector("#jugador1puntos"), document.querySelector("#cartas-jugador"), document.querySelector("#puntajejugador"), document.querySelectorAll("#text-mazo"), document.querySelector("#solicitar-carta"));
+const playeruser = new Player(document.querySelector("#jugador1"), document.querySelector("#jugador1puntos"), document.querySelector("#cartas-jugador"), document.querySelector("#puntajejugador"), document.querySelectorAll("#text-mazo"));
 const playermachine = new MachinePlayer(document.querySelector("#jugador2"), document.querySelector("#jugador2puntos"), document.querySelector("#cartas-maquina"), document.querySelector("#puntajemaquina") , document.querySelectorAll("#text-mazo"));
-const game1 = new Game(playeruser, playermachine, document.querySelector(".control-jugador")); 
+const game1 = new Game(playeruser, playermachine, document.querySelector("#solicitar-carta"), document.querySelector("#plantarse"), document.querySelector("#finalizar"), document.querySelector("#reiniciar")); 
 game1.starGame();

@@ -124,14 +124,6 @@ h2 {
     
 }
 
-.mazo-jugador, 
-.mazo-maquina { 
-    display: flex; 
-    flex-direction: column;
-}
-
-
-
 .jugador,
 .maquina,
 .contador-jugador,
@@ -189,6 +181,8 @@ h2 {
 .mazo-maquina { 
     grid-column-start: 1;
     grid-column-end: 2; 
+    display: flex; 
+    flex-direction: column;
 }
 
 .mazo-jugador { 
