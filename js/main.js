@@ -1,103 +1,211 @@
 class Player { 
     constructor(name, score, divCards, sumOfCards, namedeck) { 
-        this.name = name;
-        this.score = score; 
-        this.divCards = divCards;
-        this.sumOfCards = sumOfCards;
-        this.namedeck = namedeck;
-        this.apiUrl = 'https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1'; 
-        this.points = 0;
-        this.gamesWon = 0;
-        this.deck = "";
+        // this.name = name;
+        // this.score = score; 
+        // this.divCards = divCards;
+        //this.sumOfCards = sumOfCards;
+        //this.namedeck = namedeck;
+        //this.apiUrl = 'https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1'; 
+        // this.points = 0;
+        // this.gamesWon = 0;      
+        // this.deck = "";
 
     }
 
-    getName() { 
-        Saludar()
-        this.name.innerHTML = prompt("Ingrese el nombre del jugador 1");
-    }
+    // getName() { 
+    //     Swal.fire({
+    //         html: `
+    //         <div style:'border-radius:5%; font-family: 'Times New Roman';'>
+    //             <div>
+    //                 <h1 style='color:#fff; background: #000';>Bienvenido al mejor juego del 21 🤗</h1>
+    //                 <h2 style='color:#fff; background: green; border-radius:3%'>Por favor presione comenzar para empezar a jugar 😊</h2>
+    //                 <video src="../video/hey ya! pero en 8bit.mp4" width="300" height="350" controls autoplay loop></video>
+    //         </div>
+    //         `,
+    //         title: 'Ingrese el nombre del jugador',
+    //         input: 'text',
+    //         confirmButtonText: 'Comenzar',
+    //         width: '90%',
+    //         height: '80%',
+    //         background: '#000',
+    //         color: '#fff'
+    //     })
+    //     .then((resultado)=>{ 
+    //         this.name.innerHTML = resultado.value;
+    //     })
+    // }
 
-    showDeck () { 
-        this.namedeck.forEach((text)=>{
-            text.innerHTML += this.deck;
-        })
-    }
+    // showDeck () { 
+    //     this.namedeck.forEach((text)=>{
+    //         text.innerHTML += this.deck;
+    //     })
+    // }
 
     showSumofCards(value) {
-        if (value == "KING" || value == "QUEEN" || value == "JACK") { 
-            this.points += 10;
-        } else if (value == "ACE") { 
-            this.points += 1;
-        } else { 
-            this.points += Number(value);
-        }
+        // if (value == "KING" || value == "QUEEN" || value == "JACK") { 
+        //     this.points += 10;
+        // } else if (value == "ACE") { 
+        //     this.points += 1;
+        // } else { 
+        //     this.points += Number(value);
+        // }
         this.checkRoundLooser();
         this.sumOfCards.textContent = this.points;
     }
 
-    checkRoundLooser() { 
-        if (this.points>= 21) { 
-            alert('Perdiste');
-        }
-    }
-
-    pointForRoundVictory(mensaje) { 
-        this.gamesWon += 1;
-        alert(mensaje);
+    pointForRoundVictory(mensaje, estadisticas) { 
+        // this.gamesWon += 1;
+        // Swal.fire({ 
+        //     html: `
+        //     <div style:'border-radius:5%; font-family: 'Times New Roman';'>
+        //         <h2>${mensaje}</h2>
+        //         <iframe width="350" height="500" src="https://www.youtube.com/embed/OyHImE9hQmQ" title="John Cena  Dancing Tiktok Mem original" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        //         <p>Estadisticas:</p><br>
+        //         <p><span>${estadisticas}</span></p>
+        //     </div>
+        //     `,
+        //     width: '500px',
+        //     height: '500px',
+        //     background: '#000',
+        //     color: '#fff'    
+        // })
         this.score.innerHTML = this.gamesWon;
     }
 
-    async playUser() { 
+    async playUser(jugador=1) { 
         try { 
             const response = await fetch('https://deckofcardsapi.com/api/deck/' + this.deck + '/draw/?count=1');
             const result = await response.json();
             let div = document.createElement('div'); 
-            div.setAttribute('id', 'cartas-jugador'); 
-            div.setAttribute('class', 'carta');
-            div.innerHTML += `<img class="carta-img flip-in-ver-right" src="${result.cards[0].image}" alt="Carta: ${result.cards[0].value} ${result.cards[0].suit}">`;
+            div.setAttribute('id', 'carta-jugador'); 
+            div.setAttribute('class', 'carta hide');
+            div.innerHTML += `<img class="carta-img flip-in-ver-right ${jugador}" id="${result.cards[0].value}" src="${result.cards[0].image}" alt="${result.cards[0].value} ${result.cards[0].suit}">`;
             this.divCards.appendChild(div);
             this.showSumofCards(result.cards[0].value);
+            this.controlCartaRepetida();
         } catch(error) { 
             console.log("Error: "+ error);
         }
     }
 
+    // controlCartaRepetida() { 
+    //     let cards = document.querySelectorAll('.carta-img');
+    //     for (let i=0 ;i<cards.length; i++){
+    //         let contador = 0
+    //         for (let j=0; j<cards.length; j++) { 
+    //             if (cards[i].alt== cards[j].alt){
+    //                 contador += 1;
+    //             }
+    //             if (contador >=2) { 
+    //                 cards[i].parentNode.remove();
+    //                 if (cards[i].classList.contains(1) ) {
+    //                     let puntaje = Number(document.querySelector("#puntajejugador").innerText);
+    //                     puntaje -= Number(cards[i].id);
+    //                     document.querySelector('#puntajejugador').innerText = puntaje;
+    //                 } else { 
+    //                     let puntaje = Number(document.querySelector("#puntajemaquina").innerText);
+    //                     puntaje -= Number(cards[i].id);
+    //                     document.querySelector('#puntajemaquina').innerText = puntaje;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     let cardl = document.querySelectorAll('#carta-jugador');
+    //     console.log(cardl);
+    //     cardl.forEach((card)=>{
+    //         card.classList.remove('hide');
+    //     })
+    // }
 
-    async stardeckOfCard() { 
-        try { 
-            const response = await fetch(this.apiUrl);
-            const result = await response.json();
-            this.deck = await result.deck_id; 
-            this.showDeck();
-        }
-        catch (error) { 
-            console.log("Error: "+ error);
-        }
-    }
+
+    // async stardeckOfCard() { 
+    //     try { 
+    //         const response = await fetch(this.apiUrl);
+    //         const result = await response.json();
+    //         this.deck = await result.deck_id; 
+    //         this.showDeck();
+    //     }
+    //     catch (error) { 
+    //         console.log("Error: "+ error);
+    //     }
+    // }
 
 }
-class MachinePlayer extends Player { 
-    play() {
-        let probabilidad = Math.floor(Math.random()*4);
-        switch(probabilidad) { 
-            case 1: 
-                this.mechanismPlayer( 11);break;
-            case 2: 
-                this.mechanismPlayer(17);break;
-            case 3: 
-                this.mechanismPlayer(20);break;
-        }
+
+//class UserPLayer extends Player { 
+//     checkRoundLooser() { 
+//         if (this.points> 21) { 
+//             Swal.fire({
+//                 html: `
+//                 <div style:'border-radius:5%; font-family: 'Times New Roman';'>
+//                     <h2>Perdiste 😭😭</h2>
+//                     <iframe width="500" height="315" src="https://www.youtube.com/embed/xaZfsypesSs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+//                 </div>
+//                 `,
+//                 width: '500px',
+//                 height: '500px',
+//                 background: '#000',
+//                 color: '#fff'
+//             })
+//             let points =document.querySelector('#jugador2puntos').innerHTML;
+//             points++;
+//             document.getElementById('jugador2puntos').innerText=points;
+//         }
+//     }
+// }
+
+//class MachinePlayer extends Player { 
+    // play() {
+    //     let probabilidad = Math.floor(Math.random()*4);
+    //     switch(probabilidad) { 
+    //         case 1: 
+    //             this.mechanismPlayer(11);break;
+    //         case 2: 
+    //             this.mechanismPlayer(17);break;
+    //         case 3: 
+    //             this.mechanismPlayer(20);break;
+    //     }
         
-    }
+    // }
 
-    mechanismPlayer(level) { 
-        if(this.points <= level) { 
-            this.playUser();
-        } else { 
-            alert("Paso🥸");
-        }
-    }
-}
+    // checkRoundLooser() { 
+    //     if (this.points> 21) { 
+    //         Swal.fire({
+    //             html: `
+    //             <div style:'border-radius:5%; font-family: 'Times New Roman';'>
+    //                 <h2>Perdio la AI 😭🤖😭</h2>
+    //                 <iframe width="500" height="315" src="https://www.youtube.com/embed/xaZfsypesSs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    //             </div>
+    //             `,
+    //             width: '500px',
+    //             height: '500px',
+    //             background: '#000',
+    //             color: '#fff'
+    //         });
+    //         let points =document.querySelector('#jugador1puntos').innerHTML;
+    //         points++;
+    //         document.getElementById('jugador1puntos').innerText=points;
+    //     }
+    // }
+
+    //mechanismPlayer(level) { 
+        //if(this.points <= level) { 
+            //this.playUser(2);
+        //} else { 
+            // Swal.fire({
+            //     html: `
+            //     <h2>Paso🥸</h2>
+            //     <div style='position:relative; padding-bottom:calc(57.50% + 44px)'><iframe src='https://gfycat.com/ifr/LawfulInformalAntelopegroundsquirrel' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe></div>`,
+            //     confirmButtonText: `Aceptar que la AI es mas inteligente :v`,
+            //     width: '500px',
+            //     height: '500px',
+            //     background: '#000',
+            //     color: '#fff'
+
+            // })
+        //}
+    //}
+//}
 
 class Game { 
     constructor(player1, player2, request, pass, exitbutton, restartbutton) { 
@@ -137,7 +245,7 @@ class Game {
     }
 
     startCardsOfPlayers() { 
-        for (let i = 0; i<2; i++) { 
+        for (let i = 0; i<1; i++) { 
             this.player1.playUser();
             this.player2.mechanismPlayer(11);
         };
@@ -151,11 +259,22 @@ class Game {
             alert("Empate");
         } else if (this.player1.points >= 21 || this.player2.points >=21) {
             if (this.player1.points == 21 || this.player1.points <= this.player2.points) { 
-                this.player1.pointForRoundVictory(`Ganaste 🤗: PuntajeUsuario: ${this.player1.points}, PuntajeMaquina: ${this.player2.points}`);
+                this.player1.pointForRoundVictory(`Ganaste 🤗`, `PuntajeUsuario: ${this.player1.points} vs PuntajeMaquina: ${this.player2.points}`);
             } else if(this.player2.points == 21 || this.player2.points <= this.player1.points) { 
-                this.player2.pointForRoundVictory(`Ganó la IA 🤖: PuntajeUsuario: ${this.player1.points}, PuntajeMaquina: ${this.player2.points}`)
+                this.player2.pointForRoundVictory(`Ganó la IA 🤖`, `PuntajeUsuario: ${this.player1.points}vs PuntajeMaquina: ${this.player2.points}`)
             } else { 
-                alert('Empate');
+                Swal.fire({
+                    html: `
+                    <div style:'border-radius:5%; font-family: 'Times New Roman';'>
+                        <h2>Empate 🤓🤓🤓</h2>
+                        <iframe width="500" height="285" src="https://www.youtube.com/embed/I4xwCT1F5RA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    </div>
+                    `,
+                    width: '500px',
+                    height: '500px',
+                    background: '#000',
+                    color: '#fff'
+                })
             }
         }
     }
@@ -166,9 +285,10 @@ class Game {
             this.player2.points = 0;
             this.player1.sumOfCards.textContent = 0;
             this.player2.sumOfCards.textContent = 0;
-            document.querySelectorAll("#cartas-jugador").forEach((card)=>{
+            document.querySelectorAll("#carta-jugador").forEach((card)=>{
                 card.remove();
-            })
+            });
+            this.startCardsOfPlayers();
         })
     }
 
@@ -181,7 +301,7 @@ class Game {
      
 }
 
-const playeruser = new Player(document.querySelector("#jugador1"), document.querySelector("#jugador1puntos"), document.querySelector("#cartas-jugador"), document.querySelector("#puntajejugador"), document.querySelectorAll("#text-mazo"));
+const playeruser = new UserPLayer(document.querySelector("#jugador1"), document.querySelector("#jugador1puntos"), document.querySelector("#cartas-jugador"), document.querySelector("#puntajejugador"), document.querySelectorAll("#text-mazo"));
 const playermachine = new MachinePlayer(document.querySelector("#jugador2"), document.querySelector("#jugador2puntos"), document.querySelector("#cartas-maquina"), document.querySelector("#puntajemaquina") , document.querySelectorAll("#text-mazo"));
 const game1 = new Game(playeruser, playermachine, document.querySelector("#solicitar-carta"), document.querySelector("#plantarse"), document.querySelector("#finalizar"), document.querySelector("#reiniciar")); 
 game1.starGame();

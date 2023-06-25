@@ -1,15 +1,95 @@
-class Player { 
-    constructor(name, score, divCards, sumOfCards, namedeck) { 
-        this.name = name;
-        this.score = score; 
-        this.divCards = divCards;
-        this.sumOfCards = sumOfCards;
-        this.namedeck = namedeck;
-        this.apiUrl = 'https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1'; 
-        this.points = 0;
-        this.gamesWon = 0;      
-        this.deck = "";
 
+class DeckOfCard { 
+    constructor(domNamedeck) { 
+        this.domNamedeck = domNamedeck;
+        this.deckplayer1 = [];
+        this.deckplayer2 = [];
+        this.namedeck = '';
+        this.numCard = 0;
+        this.apiUrl = 'https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1';
+    }
+
+    async getNameDeck(){
+        try { 
+            const response = await fetch(this.apiUrl);
+            const result = await response.json();
+            this.namedeck = await result.deck_id; 
+        }
+        catch (error) { 
+            console.log("Error: "+ error);
+        }
+    }
+
+    showNameDeck(){
+        this.domNamedeck.forEach((text)=>{
+            text.innerHTML += this.deck;
+        })
+    }
+
+    async getCards(cardIndex=0, getanotherCard=false) { 
+        try { 
+            const response = await fetch('https://deckofcardsapi.com/api/deck/' + this.namedeck + '/draw/?count=1');
+            const result = await response.json();
+            this.numCard++;
+            let value = result.cards[0].value;
+            let sign = result.cards[0].suit;
+            let img = result.cards[0].image;
+            const card = {
+                valuecard: `${value}`,
+                signcard: `${sign}`,
+                imgcard:  `${img}`,
+            }
+            let carstring = JSON.stringify(card)
+            if ((cardIndex == 0) && (!getanotherCard)) {
+                if (this.numCard % 2 != 0 && this.numCard>0){
+                    this.deckplayer1.push(carstring);
+                } else { 
+                    this.deckplayer2.push(carstring);
+                }
+            } else { 
+                this.deckplayer2[cardIndex-1].valuecard = value;
+                this.deckplayer2[cardIndex-1].signcard = sign;
+                this.deckplayer2[cardIndex-1].imgcard = img;
+            }
+        } catch(error) { 
+            console.log('Error '+ error);
+        }
+    }
+
+    async getCardsMachine(){
+        const response = await fetch('https://deckofcardsapi.com/api/deck/' + this.namedeck + '/draw/?count=1');
+        const result = await response.json();
+        this.numCard++;
+        let value = result.cards[0].value;
+        let sign = result.cards[0].suit;
+        let img = result.cards[0].image;
+        const card = {
+            valuecard: `${value}`,
+            signcard: `${sign}`,
+            imgcard:  `${img}`,
+        }
+        this.deckplayer2.push(card)
+    }
+
+    removeRedundantCards() { 
+        this.deckplayer1.forEach((card1)=>{
+            this.deckplayer2.forEach((card2)=>{
+                if ((card1.valuecard == card2.valuecard) && (card1.signcard == card2.signcard)) { 
+                    this.getCards(card2.id, true);
+                };
+            });
+        });
+    }
+}
+
+class Player {
+    constructor(DomName, domRoundPoints, domDivCards, domSumCards){
+        this.DomName = DomName;
+        this.domRoundPoints = domRoundPoints;
+        this.domDivCards = domDivCards;
+        this.domSumCards = domSumCards;
+        this.sumCardsValue = 0;
+        this.pointsOfRounds = 0;
     }
 
     getName() { 
@@ -28,33 +108,25 @@ class Player {
             width: '90%',
             height: '80%',
             background: '#000',
-            color: '#fff'
+            color: '#fff',
         })
         .then((resultado)=>{ 
-            this.name.innerHTML = resultado.value;
-        })
+            this.DomName.innerHTML = resultado.value;
+        });
     }
 
-    showDeck () { 
-        this.namedeck.forEach((text)=>{
-            text.innerHTML += this.deck;
-        })
-    }
-
-    showSumofCards(value) {
+    sumPointsCard(value) {
         if (value == "KING" || value == "QUEEN" || value == "JACK") { 
-            this.points += 10;
+            this.sumCardsValue += 10;
         } else if (value == "ACE") { 
-            this.points += 1;
+            this.sumCardsValue += 1;
         } else { 
-            this.points += Number(value);
+            this.sumCardsValue += Number(value);
         }
-        this.checkRoundLooser();
-        this.sumOfCards.textContent = this.points;
+        return this.sumCardsValue;
     }
 
-    pointForRoundVictory(mensaje, estadisticas) { 
-        this.gamesWon += 1;
+    messageforRoundWinner(mensaje, estadisticas) { 
         Swal.fire({ 
             html: `
             <div style:'border-radius:5%; font-family: 'Times New Roman';'>
@@ -69,210 +141,154 @@ class Player {
             background: '#000',
             color: '#fff'    
         })
-        alert(mensaje);
-        this.score.innerHTML = this.gamesWon;
     }
 
-    async playUser() { 
-        try { 
-            const response = await fetch('https://deckofcardsapi.com/api/deck/' + this.deck + '/draw/?count=1');
-            const result = await response.json();
-            let div = document.createElement('div'); 
-            div.setAttribute('id', 'carta-jugador'); 
-            div.setAttribute('class', 'carta');
-            div.innerHTML += `<img class="carta-img flip-in-ver-right" src="${result.cards[0].image}" alt="Carta: ${result.cards[0].value} ${result.cards[0].suit}">`;
-            this.divCards.appendChild(div);
-            this.showSumofCards(result.cards[0].value);
-        } catch(error) { 
-            console.log("Error: "+ error);
-        }
-    }
-
-
-    async stardeckOfCard() { 
-        try { 
-            const response = await fetch(this.apiUrl);
-            const result = await response.json();
-            this.deck = await result.deck_id; 
-            this.showDeck();
-        }
-        catch (error) { 
-            console.log("Error: "+ error);
-        }
-    }
-
-}
-
-class UserPLayer extends Player { 
-    checkRoundLooser() { 
-        if (this.points> 21) { 
-            Swal.fire({
-                html: `
-                <div style:'border-radius:5%; font-family: 'Times New Roman';'>
-                    <h2>Perdiste 😭😭</h2>
-                    <iframe width="500" height="315" src="https://www.youtube.com/embed/xaZfsypesSs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                </div>
-                `,
-                width: '500px',
-                height: '500px',
-                background: '#000',
-                color: '#fff'
-            })
-            let points =document.querySelector('#jugador2puntos').innerHTML;
-            points++;
-            document.getElementById('jugador2puntos').innerText=points;
-        }
+    pointForRoundVictory(){
+        this.pointsOfRounds ++;
     }
 }
+
+
 
 class MachinePlayer extends Player { 
-    play() {
-        let probabilidad = Math.floor(Math.random()*4);
-        switch(probabilidad) { 
-            case 1: 
-                this.mechanismPlayer( 11);break;
-            case 2: 
-                this.mechanismPlayer(17);break;
-            case 3: 
-                this.mechanismPlayer(20);break;
-        }
-        
-    }
+    messageforPassRound(){
+        Swal.fire({
+            html: `
+            <h2>Paso🥸</h2>
+            <div style='position:relative; padding-bottom:calc(57.50% + 44px)'><iframe src='https://gfycat.com/ifr/LawfulInformalAntelopegroundsquirrel' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe></div>`,
+            confirmButtonText: `Aceptar que la AI es mas inteligente :v`,
+            width: '500px',
+            height: '500px',
+            background: '#000',
+            color: '#fff'
 
-    checkRoundLooser() { 
-        if (this.points> 21) { 
-            Swal.fire({
-                html: `
-                <div style:'border-radius:5%; font-family: 'Times New Roman';'>
-                    <h2>Perdio la AI 😭🤖😭</h2>
-                    <iframe width="500" height="315" src="https://www.youtube.com/embed/xaZfsypesSs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                </div>
-                `,
-                width: '500px',
-                height: '500px',
-                background: '#000',
-                color: '#fff'
-            });
-            let points =document.querySelector('#jugador1puntos').innerHTML;
-            points++;
-            document.getElementById('jugador1puntos').innerText=points;
-        }
-    }
-
-    mechanismPlayer(level) { 
-        if(this.points <= level) { 
-            this.playUser();
-        } else { 
-            Swal.fire({
-                html: `
-                <h2>Paso🥸</h2>
-                <div style='position:relative; padding-bottom:calc(57.50% + 44px)'><iframe src='https://gfycat.com/ifr/LawfulInformalAntelopegroundsquirrel' frameborder='0' scrolling='no' width='100%' height='100%' style='position:absolute;top:0;left:0;' allowfullscreen></iframe></div>`,
-                confirmButtonText: `Aceptar que la AI es mas inteligente :v`,
-                width: '500px',
-                height: '500px',
-                background: '#000',
-                color: '#fff'
-
-            })
-        }
+        })
     }
 }
 
 class Game { 
-    constructor(player1, player2, request, pass, exitbutton, restartbutton) { 
-        this.player1 = player1;
-        this.player2 = player2;
-        this.request = request;
-        this.pass = pass;
-        this.exitbutton = exitbutton;
-        this.restartbutton = restartbutton;
+    constructor(userPlayer, machinePlayer, deckCard, playButtonDom, passButtonDom, restartButtonDom , exitButtonDom){
+        this.userPlayer = userPlayer;
+        this.machinePlayer = machinePlayer;
+        this.deckCard = deckCard;
+        this.playButtonDom = playButtonDom;
+        this.passButtonDom = passButtonDom;
+        this.restartButtonDom = restartButtonDom;
+        this.exitButtonDom = exitButtonDom;
+        this.UserCardused = 0;
+        this.MachineCardused = 0;
     }
 
-    async starGame() { 
-        await this.player1.getName();
-        await this.player1.stardeckOfCard();
-        this.player2.deck = this.player1.deck;
-        this.startCardsOfPlayers();
-        this.getReady();
-        this.passTurn();
-        this.exit();
-        this.restart();
+    async InitGame() {
+    await this.userPlayer.getName();
+    await this.deckCard.getNameDeck();
+    await this.deckCard.showNameDeck();
+    await this.InitCardsOfPlayers(4);
+    this.showCardsPlayersInDom(2, "user");
+    this.showCardsPlayersInDom(2, "machine");
+    this.InitPlay();
+    this.passButton();
+    this.restartButton();
+    this.exitButton();
     }
 
-    getReady() { 
-        this.request.addEventListener("click", ()=> { 
-            this.player1.playUser();
-            this.player2.play();
-            setInterval(this.checkRoundWinner(), 5000)
-            
-        })
-    } 
-
-    passTurn() { 
-        this.pass.addEventListener('click', ()=> { 
-            this.player2.play();
-            this.checkRoundWinner();
-        })
-    }
-
-    startCardsOfPlayers() { 
-        for (let i = 0; i<2; i++) { 
-            this.player1.playUser();
-            this.player2.mechanismPlayer(11);
-        };
-    }
-
-   
-
-    checkRoundWinner() { 
-        console.log(this.player1.points);
-        if (this.player1.points > 21 && this.player2.points >21) { 
-            alert("Empate");
-        } else if (this.player1.points >= 21 || this.player2.points >=21) {
-            if (this.player1.points == 21 || this.player1.points <= this.player2.points) { 
-                this.player1.pointForRoundVictory(`Ganaste 🤗`, `PuntajeUsuario: ${this.player1.points} vs PuntajeMaquina: ${this.player2.points}`);
-            } else if(this.player2.points == 21 || this.player2.points <= this.player1.points) { 
-                this.player2.pointForRoundVictory(`Ganó la IA 🤖`, `PuntajeUsuario: ${this.player1.points}vs PuntajeMaquina: ${this.player2.points}`)
-            } else { 
-                Swal.fire({
-                    html: `
-                    <div style:'border-radius:5%; font-family: 'Times New Roman';'>
-                        <h2>Empate 🤓🤓🤓</h2>
-                        <iframe width="500" height="285" src="https://www.youtube.com/embed/I4xwCT1F5RA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                    </div>
-                    `,
-                    width: '500px',
-                    height: '500px',
-                    background: '#000',
-                    color: '#fff'
-                })
-            }
+    async InitCardsOfPlayers(num){
+        for(let i= 0; i<num; i++){
+            await this.deckCard.getCards();
+            await this.deckCard.removeRedundantCards();
         }
     }
 
-    restart() { 
-        this.restartbutton.addEventListener('click', ()=> { 
-            this.player1.points = 0;
-            this.player2.points = 0;
-            this.player1.sumOfCards.textContent = 0;
-            this.player2.sumOfCards.textContent = 0;
+    showCardsPlayersInDom(num, player){
+        console.log(this.deckCard.deckplayer1[0]);
+        for(let i=0; i<num; i++){
+            let div = document.createElement('div'); 
+            div.setAttribute('id', 'carta-jugador'); 
+            div.setAttribute('class', 'carta');
+            if (player == 'user') { 
+                div.innerHTML += `<img class="carta-img flip-in-ver-right" src="${this.deckCard.deckplayer1[this.UserCardused].imgcard}" alt="${this.deckCard.deckplayer1[this.UserCardused].valuecard} ${this.deckCard.deckplayer1[this.UserCardused].signcard}">`;
+                this.userPlayer.domDivCards.appendChild(div);
+                this.UserCardused++;
+                this.userPlayer.domSumCards = this.userPlayer.sumPointsCard(this.deckCard.deckplayer1[this.UserCardused].valuecard);
+            } else if (player == "machine") { 
+                div.innerHTML += `<img class="carta-img flip-in-ver-right" src="${this.deckCard.deckplayer2[this.MachineCardused].imgcard}" alt="${this.deckCard.deckplayer2[this.MachineCardused].valuecard} ${this.deckCard.deckplayer2[this.MachineCardused].signcard}">`;
+                this.machinePlayer.domDivCards.appendChild(div);
+                this.MachineCardused++;
+                this.machinePlayer.domSumCards = this.machinePlayer.sumPointsCard(this.deckCard.deckplayer2[this.MachineCardused].valuecard);
+            }    
+        }
+    }
+
+    InitPlay() { 
+        this.playButtonDom.addEventListener('click', ()=>{
+            this.this.InitCardsOfPlayers(2);
+            this.showCardsPlayersInDom(1,"user");
+            this.showCardsPlayersInDom(1,"machine");
+            this.checkWinnerRound();
+        });
+    }
+
+    passButton(){
+        this.passButtonDom.addEventListener('click', ()=>{
+            this.deckCard.getCardsMachine();
+            this.deckCard.removeRedundantCards();
+            this.showCardsPlayersInDom(1, 'machine');
+            this.checkWinnerRound();
+        })
+    }
+    
+    checkWinnerRound(){
+        if(this.userPlayer.sumCardsValue > 21) {
+            this.machinePlayer.messageforRoundWinner(`El usuario ${this.userPlayer.DomName.innerHTML} esta descalificado por pasarse de 21`, `Puntaje de ${this.userPlayer.DomName.innerHTML}: ${this.userPlayer.sumCardsValue} vs Puntaje de AIplayer: ${this.machinePlayer.sumCardsValue}`);
+            this.bloquearControles()
+        } else if(this.machinePlayer.sumCardsValue > 21) {
+            this.machinePlayer.messageforRoundWinner(`El usuario AIplayer esta descalificado por pasarse de 21`, `Puntaje de ${this.userPlayer.DomName.innerHTML}: ${this.userPlayer.sumCardsValue} vs Puntaje de AIplayer: ${this.machinePlayer.sumCardsValue}`);
+            this.bloquearControles()
+        } else if (this.userPlayer.sumCardsValue == 21) {
+            this.machinePlayer.messageforRoundWinner(`El usuario ${this.userPlayer.DomName.innerHTML} gano 🤗🤗`, `Puntaje de ${this.userPlayer.DomName.innerHTML}: ${this.userPlayer.sumCardsValue} vs Puntaje de AIplayer: ${this.machinePlayer.sumCardsValue}`);
+            this.bloquearControles();
+        } else if (this.machinePlayer.sumCardsValue == 21){
+            this.machinePlayer.messageforRoundWinner(`El usuario AIplayer gano 🤗🤗🤗`, `Puntaje de ${this.userPlayer.DomName.innerHTML}: ${this.userPlayer.sumCardsValue} vs Puntaje de AIplayer: ${this.machinePlayer.sumCardsValue}`);
+            this.bloquearControles();
+        } else  {
+            this.machinePlayer.messageforRoundWinner(`Empate 😱😱😱`, `Puntaje de ${this.userPlayer.DomName.innerHTML}: ${this.userPlayer.sumCardsValue} vs Puntaje de AIplayer: ${this.machinePlayer.sumCardsValue}`);
+            this.bloquearControles();
+        }
+    }
+
+    restartButton(){
+        this.restartButtonDom.addEventListener('click', ()=>{
+            this.userPlayer.sumCardsValue = 0;
+            this.machinePlayer.sumCardsValue = 0;
+            this.userPlayer.domSumCards.innerHTML = 0;
+            this.machinePlayer.domSumCards.innerHTML = 0;
             document.querySelectorAll("#carta-jugador").forEach((card)=>{
                 card.remove();
             });
-            this.startCardsOfPlayers();
+            this.InitCardsOfPlayers(4);
+            this.showCardsPlayersInDom(2, "user");
+            this.showCardsPlayersInDom(2, "machine");
+            this.InitPlay();
+        });
+    }
+    
+    bloquearControles(){
+        document.querySelector(".control-jugador").addEventListener('click', ()=>{
+            alert('El Round termino presione Reiniciar');
         })
     }
 
-    exit() {
-        this.exitbutton.addEventListener("click", ()=> {
-            alert(`Gracias por jugar. Estadisticas: Jugador ${this.player1.name.textContent}: ${this.player1.gamesWon} vs AI Opponent🤖: ${this.player2.gamesWon}`)
+    exitButton(){
+        this.exitButtonDom.addEventListener('click', ()=>{
             location.reload();
         })
     }
-     
+
+
 }
 
-const playeruser = new UserPLayer(document.querySelector("#jugador1"), document.querySelector("#jugador1puntos"), document.querySelector("#cartas-jugador"), document.querySelector("#puntajejugador"), document.querySelectorAll("#text-mazo"));
-const playermachine = new MachinePlayer(document.querySelector("#jugador2"), document.querySelector("#jugador2puntos"), document.querySelector("#cartas-maquina"), document.querySelector("#puntajemaquina") , document.querySelectorAll("#text-mazo"));
-const game1 = new Game(playeruser, playermachine, document.querySelector("#solicitar-carta"), document.querySelector("#plantarse"), document.querySelector("#finalizar"), document.querySelector("#reiniciar")); 
-game1.starGame();
+const deck = new DeckOfCard(document.querySelectorAll("#text-mazo"));
+const user = new Player(document.querySelector("#jugador1"), document.querySelector("#jugador1puntos"), document.querySelector("#cartas-jugador"), document.querySelector("#puntajejugador"));
+const machine = new MachinePlayer(document.querySelector("#jugador2"), document.querySelector("#jugador2puntos"), document.querySelector("#cartas-maquina"), document.querySelector("#puntajemaquina"));
+const game = new Game(user, machine, deck, document.querySelector("#solicitar-carta"), document.querySelector("#plantarse"), document.querySelector("#reiniciar"), document.querySelector("#finalizar"));
+game.InitGame();

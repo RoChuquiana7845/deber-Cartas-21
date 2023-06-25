@@ -246,6 +246,10 @@ h2 {
     transition: all 0.6s ease;
 }
 
+.hide { 
+    visibility:hidden;
+}
+
 .boton span:nth-child(1) { 
     right: 10%;
     top: -15px;
